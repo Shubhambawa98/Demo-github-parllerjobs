@@ -33,23 +33,23 @@ jobs:
 
       # Check if the required variables are available
       - run: |
-          if [[ -z "${TESTMO_URL}" ]]; then
-            echo "The TESTMO_URL secret is not defined for this repository"
+          if [[ -z "${PROJECTURL}" ]]; then
+            echo "The PROJECTURL secret is not defined for this repository"
             exit 1
           fi
 
-          if [[ -z "${TESTMO_TOKEN}" ]]; then
-            echo "The TESTMO_TOKEN secret is not defined for this repository"
+          if [[ -z "${TOKEN}" ]]; then
+            echo "The  secret is not defined for this repository"
             exit 1
           fi
         env:
-          TESTMO_URL: ${{ secrets.TESTMO_URL }}
-          TESTMO_TOKEN: ${{ secrets.TESTMO_TOKEN }}
+          PROJECTURL: ${{ secrets.PROJECTURL }}
+          TOKEN: ${{ secrets.TOKEN }}
 
       # Create test run
       - run: |
           npx testmo automation:run:create \
-            --instance "$TESTMO_URL" \
+            --instance "$PROJECTURL" \
             --project-id 1 \
             --name "Parallel mocha test run" \
             --resources resources.json \
@@ -57,8 +57,8 @@ jobs:
           ID=$(cat testmo-run-id.txt)
           echo "testmo-run-id=$ID" >> $GITHUB_OUTPUT
         env:
-          TESTMO_URL: ${{ secrets.TESTMO_URL }}
-          TESTMO_TOKEN: ${{ secrets.TESTMO_TOKEN }}
+          PROJECTURL: ${{ secrets.PROJECTURL }}
+          TOKEN: ${{ secrets.TOKEN }}
         id: run-tests
 
   test:
@@ -89,8 +89,8 @@ jobs:
         env:
           CI_TOTAL: ${{ matrix.ci_total }}
           CI_INDEX: ${{ matrix.ci_index }}
-          TESTMO_URL: ${{ secrets.TESTMO_URL }}
-          TESTMO_TOKEN: ${{ secrets.TESTMO_TOKEN }}
+          PROJECTURL: ${{ secrets.PROJECTURL }}
+          TOKEN: ${{ secrets.TOKEN }}
 
   test-complete:
     needs: [test-setup, test]
@@ -108,11 +108,11 @@ jobs:
       # Mark test run completed
       - run: |
           npx testmo automation:run:complete \
-            --instance "$TESTMO_URL" \
+            --instance "$PROJECTURL" \
             --run-id "${{ needs.test-setup.outputs.testmo-run-id }}"
         env:
-          TESTMO_URL: ${{ secrets.TESTMO_URL }}
-          TESTMO_TOKEN: ${{ secrets.TESTMO_TOKEN }}
+          PROJECTURL: ${{ secrets.PROJECTURL }}
+          TOKEN: ${{ secrets.TOKEN }}
 
   deploy:
     needs: [test, test-complete]
